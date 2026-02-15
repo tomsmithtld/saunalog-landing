@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaunaLog - Sauna Session Timer & Heat Tracker</title>
+    <meta name="description" content="Track sauna sessions, hit the 57 min/week Huberman target, and monitor heat exposure. Protocols, streaks, and analytics. Coming soon.">
+    <meta property="og:title" content="SaunaLog - Sauna Session Timer & Heat Tracker">
+    <meta property="og:description" content="Track sauna sessions, hit the 57 min/week Huberman target, and monitor heat exposure. Coming soon to iOS and Android.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://saunalog.33c.dev">
+    <meta property="og:image" content="https://saunalog.33c.dev/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0F1117;
+            --bg-card: rgba(28, 16, 14, 0.5);
+            --red: #EF4444;
+            --red-light: #F87171;
+            --red-glow: rgba(239, 68, 68, 0.2);
+            --amber: #F59E0B;
+            --amber-light: #FBBF24;
+            --amber-glow: rgba(245, 158, 11, 0.2);
+            --extreme: #DC2626;
+            --white: #f5f0ec;
+            --white-70: rgba(245, 240, 236, 0.7);
+            --white-40: rgba(245, 240, 236, 0.4);
+            --white-10: rgba(245, 240, 236, 0.1);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        html { scroll-behavior: smooth; background: var(--bg); }
+        body { font-family: var(--font); background: var(--bg); color: var(--white); line-height: 1.65; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+        .glow { position: fixed; border-radius: 50%; filter: blur(140px); z-index: 0; pointer-events: none; }
+        .glow--1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(239,68,68,0.07) 0%, transparent 70%); top: -100px; right: -60px; animation: drift 22s ease-in-out infinite alternate; }
+        .glow--2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(245,158,11,0.05) 0%, transparent 70%); bottom: 10%; left: -100px; animation: drift 18s ease-in-out infinite alternate-reverse; }
+        @keyframes drift { 0% { transform: translate(0,0); } 100% { transform: translate(25px,-20px); } }
+
+        .container { max-width: 960px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        section { position: relative; z-index: 1; }
+
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .rd1 { transition-delay: .1s; } .rd2 { transition-delay: .2s; } .rd3 { transition-delay: .3s; } .rd4 { transition-delay: .4s; }
+
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 14px 0; transition: background 0.3s; }
+        nav.scrolled { background: rgba(15,17,23,0.88); backdrop-filter: blur(18px); border-bottom: 1px solid var(--white-10); }
+        nav .container { display: flex; justify-content: space-between; align-items: center; }
+        .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--white); font-size: 18px; font-weight: 700; }
+        .nav-logo .a { color: var(--red-light); }
+        .nav-cta { padding: 8px 18px; background: var(--red); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--red-glow); }
+
+        .hero { min-height: 100vh; display: flex; align-items: center; padding: 120px 0 80px; text-align: center; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--white-10); border: 1px solid var(--white-10); border-radius: 100px; font-size: 13px; color: var(--amber-light); font-weight: 500; margin-bottom: 24px; }
+        .hero-badge .dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: blink 2s infinite; }
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        .hero h1 { font-size: clamp(32px, 5vw, 50px); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 20px; }
+        .hero h1 .hl { color: var(--red-light); }
+        .hero p.sub { font-size: 18px; color: var(--white-70); max-width: 540px; margin: 0 auto 32px; }
+
+        /* Heat meter */
+        .heat-meter { max-width: 320px; margin: 0 auto 36px; }
+        .meter-bar { height: 8px; border-radius: 4px; background: var(--white-10); overflow: hidden; margin-bottom: 8px; }
+        .meter-fill { height: 100%; border-radius: 4px; width: 0%; background: linear-gradient(90deg, var(--amber), var(--red), var(--extreme)); animation: fill-meter 3s ease-out forwards 0.5s; }
+        @keyframes fill-meter { 0% { width: 0%; } 100% { width: 72%; } }
+        .meter-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--white-40); }
+        .meter-target { color: var(--amber-light); font-weight: 600; }
+
+        .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-p { padding: 14px 28px; background: var(--red); color: var(--white); border: none; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-p:hover { transform: translateY(-2px); box-shadow: 0 6px 24px var(--red-glow); }
+        .btn-o { padding: 14px 28px; background: transparent; color: var(--white); border: 1px solid var(--white-40); border-radius: 10px; font-size: 16px; font-weight: 600; text-decoration: none; transition: border-color 0.2s; }
+        .btn-o:hover { border-color: var(--red-light); color: var(--red-light); }
+        .hero-sub2 { font-size: 13px; color: var(--white-40); margin-top: 18px; }
+
+        .features { padding: 100px 0; }
+        .sl { font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--amber-light); font-weight: 600; margin-bottom: 12px; }
+        .st { font-size: clamp(26px, 3.5vw, 36px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 48px; line-height: 1.2; }
+        .fg { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+        .fc { background: var(--bg-card); border: 1px solid var(--white-10); border-radius: 14px; padding: 26px; transition: border-color 0.3s, transform 0.3s; }
+        .fc:hover { border-color: var(--red); transform: translateY(-3px); }
+        .fi { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 14px; }
+        .fi--timer { background: rgba(239,68,68,0.15); }
+        .fi--proto { background: rgba(245,158,11,0.15); }
+        .fi--stats { background: rgba(139,92,246,0.15); }
+        .fi--streak { background: rgba(239,68,68,0.15); }
+        .fc h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .fc p { font-size: 14px; color: var(--white-70); line-height: 1.55; }
+
+        /* Protocols */
+        .protocols { padding: 80px 0; }
+        .proto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; max-width: 700px; margin: 0 auto; }
+        .proto-card { background: var(--bg-card); border: 1px solid var(--white-10); border-radius: 14px; padding: 22px; }
+        .proto-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .proto-meta { font-size: 13px; color: var(--amber-light); margin-bottom: 6px; }
+        .proto-card p { font-size: 13px; color: var(--white-40); line-height: 1.5; }
+
+        .science { padding: 80px 0; }
+        .science-box { background: var(--bg-card); border: 1px solid var(--white-10); border-radius: 18px; padding: 44px; max-width: 660px; margin: 0 auto; }
+        .science-box h2 { font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+        .science-box p { font-size: 15px; color: var(--white-70); margin-bottom: 14px; line-height: 1.7; }
+        .science-box p:last-child { margin-bottom: 0; }
+        .science-cite { font-size: 13px; color: var(--white-40); border-top: 1px solid var(--white-10); padding-top: 14px; margin-top: 18px; font-style: italic; }
+
+        .waitlist { padding: 80px 0 100px; text-align: center; }
+        .wc { background: linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(245,158,11,0.04) 100%); border: 1px solid var(--white-10); border-radius: 18px; padding: 48px 32px; max-width: 520px; margin: 0 auto; }
+        .wc h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+        .wc p { color: var(--white-70); margin-bottom: 24px; font-size: 15px; }
+        .wf { display: flex; gap: 10px; max-width: 400px; margin: 0 auto; }
+        .wf input { flex: 1; padding: 12px 16px; background: rgba(15,17,23,0.8); border: 1px solid var(--white-10); border-radius: 8px; color: var(--white); font-size: 15px; font-family: var(--font); outline: none; }
+        .wf input:focus { border-color: var(--red); }
+        .wf input::placeholder { color: var(--white-40); }
+        .wf button { padding: 12px 24px; background: var(--red); color: var(--white); border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
+        .wf button:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--red-glow); }
+
+        footer { padding: 32px 0; border-top: 1px solid var(--white-10); font-size: 13px; color: var(--white-40); }
+        footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        footer a { color: var(--white-40); text-decoration: none; }
+        footer a:hover { color: var(--red-light); }
+        .fl { display: flex; gap: 20px; }
+
+        @media (max-width: 600px) {
+            .hero { padding: 100px 0 60px; }
+            .wf { flex-direction: column; }
+            .wf button { width: 100%; }
+            .science-box { padding: 28px 20px; }
+            .proto-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow glow--1"></div>
+    <div class="glow glow--2"></div>
+
+    <nav id="nav">
+        <div class="container">
+            <a href="#" class="nav-logo">🔥 Sauna<span class="a">Log</span></a>
+            <a href="#waitlist" class="nav-cta">Join Waitlist</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="reveal"><div class="hero-badge"><span class="dot"></span> Coming soon to iOS and Android</div></div>
+            <h1 class="reveal rd1">Track Your <span class="hl">Heat</span> Exposure</h1>
+            <div class="heat-meter reveal rd2">
+                <div class="meter-bar"><div class="meter-fill"></div></div>
+                <div class="meter-labels">
+                    <span>0 min</span>
+                    <span class="meter-target">57 min target</span>
+                    <span>90 min</span>
+                </div>
+            </div>
+            <p class="sub reveal rd3">Session timer, temperature logging, and weekly heat accumulation tracking. Hit the Huberman 57 min/week target. See your consistency build over time.</p>
+            <div class="cta-row reveal rd4">
+                <a href="#waitlist" class="btn-p">Join the Waitlist</a>
+                <a href="#features" class="btn-o">Learn More</a>
+            </div>
+            <p class="hero-sub2 reveal rd4">Free tier available. All data stays on your phone.</p>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="sl reveal">Features</div>
+            <h2 class="st reveal rd1">Built for the sauna, not the spa</h2>
+            <div class="fg">
+                <div class="fc reveal rd1">
+                    <div class="fi fi--timer">⏱️</div>
+                    <h3>Session Timer</h3>
+                    <p>Count-up timer with temperature display. Heat zone indicator changes colour as temperature climbs. Haptic pulse every 5 minutes.</p>
+                </div>
+                <div class="fc reveal rd2">
+                    <div class="fi fi--proto">📋</div>
+                    <h3>Protocol Templates</h3>
+                    <p>Huberman, Soeberg, Beginner, and Endurance protocols built in. Follow a structured program or freestyle your sessions.</p>
+                </div>
+                <div class="fc reveal rd3">
+                    <div class="fi fi--stats">📊</div>
+                    <h3>Weekly Target</h3>
+                    <p>The hero metric: minutes per week. Progress ring fills as you approach your target. Green when you hit it.</p>
+                </div>
+                <div class="fc reveal rd4">
+                    <div class="fi fi--streak">🔥</div>
+                    <h3>Streak Tracking</h3>
+                    <p>Consecutive weeks hitting your target. The flame counter that keeps you going back to the sauna.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="protocols" id="protocols">
+        <div class="container">
+            <div class="sl reveal" style="text-align:center;">Protocols</div>
+            <h2 class="st reveal rd1" style="text-align:center;">Research-backed programs</h2>
+            <div class="proto-grid">
+                <div class="proto-card reveal rd1">
+                    <h4>Huberman Protocol</h4>
+                    <div class="proto-meta">57 min/week, 80-100C</div>
+                    <p>2-3 sessions per week, 19-28 min each. The most cited target in sauna research.</p>
+                </div>
+                <div class="proto-card reveal rd2">
+                    <h4>Soeberg Principle</h4>
+                    <div class="proto-meta">57 min/week + cold finish</div>
+                    <p>Same heat exposure, but end each session with brief cold. Maximum metabolic benefit.</p>
+                </div>
+                <div class="proto-card reveal rd3">
+                    <h4>Beginner</h4>
+                    <div class="proto-meta">30 min/week, 70-80C</div>
+                    <p>2 sessions of 15 min. Lower temperature. For people building their heat tolerance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="science" id="science">
+        <div class="container">
+            <div class="science-box reveal">
+                <h2>The 57 minute number</h2>
+                <p>Regular sauna use is linked to reduced cardiovascular mortality, improved recovery, and better sleep quality. The research keeps piling up.</p>
+                <p>57 minutes per week across 2-3 sessions is the threshold that keeps showing up in the literature. That's what Huberman recommends, and it's the target SaunaLog is built around.</p>
+                <p>The app doesn't tell you what to do. It just tracks whether you're hitting that number, and shows you how consistent you've been.</p>
+                <div class="science-cite">Sources: Laukkanen et al. (JAMA Internal Medicine, 2015), Huberman Lab Podcast, Dr. Susanna Soeberg research</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="waitlist" id="waitlist">
+        <div class="container">
+            <div class="wc reveal">
+                <h2>Get Early Access</h2>
+                <p>Drop your email. We'll let you know when SaunaLog launches.</p>
+                <form class="wf" action="https://formspree.io/f/PLACEHOLDER" method="POST">
+                    <input type="email" name="email" placeholder="your@email.com" required>
+                    <button type="submit">Join</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <span>Built by Tom. &copy; 2026</span>
+            <div class="fl"><a href="#">Privacy</a><a href="#">Terms</a></div>
+        </div>
+    </footer>
+
+    <script>
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth' }); });
+        });
+    </script>
+</body>
+</html>
