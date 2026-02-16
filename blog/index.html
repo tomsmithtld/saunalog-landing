@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | SaunaLog</title>
+    <meta name="description" content="Sauna protocols, contrast therapy, and heat exposure science. Evidence-based guides for getting the most from your sauna sessions.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0F1117;
+            --bg-card: rgba(28, 16, 14, 0.5);
+            --red: #EF4444;
+            --red-light: #F87171;
+            --amber: #F59E0B;
+            --amber-glow: rgba(245, 158, 11, 0.2);
+            --white: #f5f0ec;
+            --white-70: rgba(245, 240, 236, 0.7);
+            --white-40: rgba(245, 240, 236, 0.4);
+            --white-10: rgba(245, 240, 236, 0.1);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        html { scroll-behavior: smooth; background: var(--bg); }
+        body { font-family: var(--font); background: var(--bg); color: var(--white); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+        .glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; filter: blur(140px); z-index: 0; pointer-events: none; background: radial-gradient(circle, rgba(239,68,68,0.06) 0%, transparent 70%); top: -100px; right: -60px; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 14px 0; background: rgba(15, 17, 23, 0.88); backdrop-filter: blur(18px); border-bottom: 1px solid var(--white-10); }
+        nav .container { display: flex; justify-content: space-between; align-items: center; }
+        .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--white); font-size: 18px; font-weight: 700; }
+        .nav-logo .accent { color: var(--red-light); }
+        .nav-cta { padding: 8px 18px; background: var(--amber); color: #1a1a2e; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; }
+        .container { max-width: 720px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        .blog-header { padding: 120px 0 40px; }
+        .blog-header h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+        .blog-header p { color: var(--white-40); font-size: 17px; }
+        .post-card { display: block; background: var(--bg-card); border: 1px solid var(--white-10); border-radius: 14px; padding: 28px; margin-bottom: 20px; text-decoration: none; transition: border-color 0.2s, transform 0.2s; opacity: 0; transform: translateY(20px); }
+        .post-card.visible { opacity: 1; transform: translateY(0); transition: opacity 0.5s, transform 0.5s, border-color 0.2s; }
+        .post-card:hover { border-color: var(--red); transform: translateY(-2px); }
+        .post-card h2 { font-size: 20px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+        .post-card p { font-size: 15px; color: var(--white-70); margin-bottom: 12px; }
+        .post-meta { display: flex; gap: 12px; font-size: 13px; color: var(--white-40); }
+        .tag { background: rgba(239,68,68,0.15); color: var(--red-light); padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        footer { text-align: center; padding: 40px 0; color: var(--white-40); font-size: 13px; border-top: 1px solid var(--white-10); margin-top: 60px; }
+        footer a { color: var(--white-40); text-decoration: none; }
+        @media (max-width: 640px) { .blog-header { padding-top: 100px; } .container { padding: 0 16px; } }
+    </style>
+</head>
+<body>
+    <div class="glow"></div>
+    <nav>
+        <div class="container">
+            <a href="/" class="nav-logo">🔥 Sauna<span class="accent">Log</span></a>
+            <a href="/#waitlist" class="nav-cta">Join Waitlist</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="blog-header">
+            <h1>Blog</h1>
+            <p>Sauna science, protocols, and practical guides.</p>
+        </div>
+        <a href="/blog/huberman-sauna-protocol" class="post-card">
+            <h2>Huberman Sauna Protocol: 57 Minutes Per Week</h2>
+            <p>Andrew Huberman's evidence-based sauna protocol for cardiovascular health and longevity. The research, the numbers, and how to actually hit the target.</p>
+            <div class="post-meta">
+                <span>6 min read</span>
+                <span class="tag">Protocol</span>
+                <span class="tag">Research</span>
+            </div>
+        </a>
+        <a href="/blog/sauna-cold-plunge-order" class="post-card">
+            <h2>Sauna vs Cold Plunge: Which Should You Do First?</h2>
+            <p>Hot then cold or cold then hot? The contrast therapy debate, and why the order depends on whether you want energy or sleep.</p>
+            <div class="post-meta">
+                <span>5 min read</span>
+                <span class="tag">Contrast</span>
+                <span class="tag">Cold Plunge</span>
+            </div>
+        </a>
+    </div>
+    <footer>
+        <div class="container">
+            <p>Built by Tom &nbsp;|&nbsp; <a href="/#privacy">Privacy</a> &nbsp;|&nbsp; <a href="/#terms">Terms</a> &nbsp;|&nbsp; &copy; 2026 SaunaLog</p>
+        </div>
+    </footer>
+    <script>
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.post-card').forEach((c, i) => { c.style.transitionDelay = `${i * 0.1}s`; observer.observe(c); });
+    </script>
+</body>
+</html>

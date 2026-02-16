@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://saunalog.33c.dev/sitemap.xml
